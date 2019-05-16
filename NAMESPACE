@@ -1,0 +1,8 @@
+# Export all
+exportPattern("^[^\\.]")
+
+import("mclust", "foreach", "iterators", "clustvarsel")
+
+importFrom("BMA", bicreg)
+
+importFrom("stats", df.residual, lm.fit, residuals)
