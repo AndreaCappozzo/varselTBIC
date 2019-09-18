@@ -50,6 +50,9 @@ redda_model_varsel <- function(X_p,
       ll <-
         ll - fitm$ll_reg # this is the likelihood of the normal density on Xtrain, that is X_c
       lm_fit <- fitm$lm_fit
+      alpha <- lm_fit$coefficients[1]
+      beta <- lm_fit$coefficients[-1]
+      sigma <- sqrt(mean(residuals(lm_fit) ^ 2))
     }
   } else {
     Ntrain_trim <- NULL
@@ -115,7 +118,13 @@ redda_model_varsel <- function(X_p,
     } else {
       colnames(res$parameters$mean) <- classLabel
     }
-
+    if (model == "NG") {
+      res$parameters_regression <-
+        list(alpha = alpha,
+             beta = beta,
+             sigma = sigma,
+             number_of_param = length(lm_fit$residuals) - df.residual(lm_fit) + 1)
+    }
     ztrain <- fitetrain$z
     cltrain <-
       factor(sapply(map(ztrain), function(i)
@@ -131,6 +140,16 @@ redda_model_varsel <- function(X_p,
         cbind(1:Ntrain, mclust::map(ltrain)) # matrix with obs and respective group from ltrain
       D_Xtrain <-
         D_Xtrain_cond[ind_D_Xtrain_cdens] # I compute D_g conditioning ON the fact that I know the supposed true class
+      if (model == "NG") {
+        D_reg <-
+          as.vector(dnorm(
+            X_p,
+            mean = alpha + Xtrain[, names(beta), drop = FALSE] %*% beta,
+            sd = sigma,
+            log = T
+          ))
+        D_Xtrain <- D_Xtrain + D_reg #D_{No Grouping}
+      }
       pos_trimmed_train <-
         # I trim the conditional density \phi(x_n; \mu_g, \Sigma_g) when x_n comes from group g
         which(D_Xtrain <= (sort(D_Xtrain, decreasing = F)

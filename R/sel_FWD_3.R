@@ -2,7 +2,7 @@
 ## Sequential & parallel robust forward greedy search REDDA
 #############################################################################
 
-redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
+redda_varsel_gr_fwd <- function(Xtrain,
                                 cltrain,
                           emModels1 = c("E","V"),
                           emModels2 = mclust.options("emModelNames"),
@@ -64,7 +64,17 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
     silent = TRUE)
 
     # maxBIC is the maximum BIC over all grouping models fit
-    maxBIC <- if(is.null(xBIC$bic)) NA else xBIC$bic
+    maxBIC <- if (is.null(xBIC$bic)) {
+      NA
+    } else {
+      BIC_computation(
+        X_p = NULL,
+        X_c = Xtrain[, i],
+        cltrain = cltrain,
+        fitted_model = xBIC,
+        model_type = "GR"
+      )
+    }
     # Fit and get BIC for a single component no-group normal model
     if (alpha_Xtrain != 0) {
       best_subset <-
@@ -74,14 +84,26 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
       # this is done because cov.mcd (as well as covMcd in robustbase)
       # use consistency correction that I do not want to include
 
-      try(oneBIC <-
+      try(fit_no_grouping <-
             mclust::Mclust(
               Xtrain[best_subset, i],
               G = 1,
               modelNames = emModels1,
               verbose = FALSE
-            )$BIC[1],
+            ),
           silent = TRUE)
+      oneBIC <- if (is.null(fit_no_grouping$bic)) {
+        NA
+      } else {
+        2*sum(
+          dnorm(
+            x = Xtrain[, i],
+            mean = fit_no_grouping$parameters$mean,
+            sd = sqrt(fit_no_grouping$parameters$variance$sigmasq),
+            log = TRUE
+          )
+        ) - 2*log(length(Xtrain[, i]))
+      }
     } else {
       try(oneBIC <- mclust::Mclust(
         Xtrain[, i],
@@ -127,7 +149,7 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
   {
     # cindepBIC is the BIC for the grouping model on S and the
     # regression model of the new variable on S
-    try(cindepBIC <- redda_varsel(
+    try(fit_no_grouping <- redda_varsel(
       X_p = NS[,i],
       X_c = S,
       cltrain = cltrain,
@@ -137,10 +159,19 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
       model = "NG"
     )$Best,
     silent = TRUE)
-    cindepBIC <- if(is.null(cindepBIC$bic)) NA else cindepBIC$bic
+    
+    cindepBIC <- if(is.null(fit_no_grouping$bic)) {NA
+    } else {
+      BIC_computation(
+        X_p = NS[, i],
+        X_c = S,
+        cltrain = cltrain,
+        fitted_model = fit_no_grouping,
+        model_type = "NG"
+      )}
     # Fit the cluster model on the two variables
     sBIC <- NULL
-    try(sBIC <- redda_varsel(
+    try(fit_grouping <- redda_varsel(
       X_p = NS[,i],
       X_c = S,
       cltrain = cltrain,
@@ -151,9 +182,19 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
     )$Best,
         silent = TRUE)
     # depBIC is the BIC for the grouping model with both variables
-    depBIC <- if(is.null(sBIC$bic)) NA else sBIC$bic
-
-    return(list(cindepBIC, depBIC, sBIC$modelName, sBIC$G))
+    depBIC <- if (is.null(fit_grouping$bic)) {
+      NA
+    } else {
+      BIC_computation(
+        X_p = NS[, i],
+        X_c = S,
+        cltrain = cltrain,
+        fitted_model = fit_grouping,
+        model_type = "GR"
+      )
+    }
+    
+    return(list(cindepBIC, depBIC, fit_grouping$modelName, fit_grouping$G))
   }
   cindepBIC <- sapply(out, "[[", 1)
   depBIC <- sapply(out, "[[", 2)
@@ -232,7 +273,7 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
             {
               # cindepBIC is the BIC for the grouping model on S and the
               # regression model of the new variable on S
-              try(cindepBIC <- redda_varsel(
+              try(fit_no_grouping <- redda_varsel(
                 X_p = NS[,i],
                 X_c = S,
                 cltrain = cltrain,
@@ -243,10 +284,21 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
               )$Best,
               silent = TRUE)
 
-              cindepBIC <- if(is.null(cindepBIC$bic)) NA else cindepBIC$bic
+              cindepBIC <-
+                if (is.null(fit_no_grouping$bic)) {
+                  NA
+                } else {
+                  BIC_computation(
+                    X_p = NS[, i],
+                    X_c = S,
+                    cltrain = cltrain,
+                    fitted_model = fit_no_grouping,
+                    model_type = "NG"
+                  )
+                }
               # Fit the cluster model on the two variables
-              sBIC <- NULL
-              try(sBIC <- redda_varsel(
+              fit_grouping <- NULL
+              try(fit_grouping <- redda_varsel(
                 X_p = NS[,i],
                 X_c = S,
                 cltrain = cltrain,
@@ -256,10 +308,21 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
                 model = "GR"
               )$Best,
               silent = TRUE)
+              
               # depBIC is the BIC for the grouping model with both variables
-              depBIC <- if(is.null(sBIC$bic)) NA else sBIC$bic
-
-              return(list(cindepBIC, depBIC, sBIC$modelName, sBIC$G))
+              
+              depBIC <- if (is.null(fit_grouping$bic)) {
+                NA
+              } else{
+                BIC_computation(
+                  X_p = NS[, i],
+                  X_c = S,
+                  cltrain = cltrain,
+                  fitted_model = fit_grouping,
+                  model_type = "GR"
+                )
+              }
+              return(list(cindepBIC, depBIC, fit_grouping$modelName, fit_grouping$G))
             }
             cindepBIC <- sapply(out, "[[", 1)
             depBIC <- sapply(out, "[[", 2)
@@ -303,14 +366,25 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
           # this is done because cov.mcd (as well as covMcd in robustbase)
           # use consistency correction that I do not want to include
 
-          try(oneBIC <-
+          try(fit_no_grouping <-
                 Mclust(
                   S[best_subset,,drop=F],
                   G = 1,
                   modelNames = emModels1,
                   verbose = FALSE
-                )$BIC[1],
+                ),
               silent = TRUE)
+          
+          # BIC for the entire set of obs having robustly estimated model parameters
+          oneBIC <- 2*sum(
+            dnorm(
+              x = Xtrain[, i],
+              mean = fit_no_grouping$parameters$mean,
+              sd = sqrt(fit_no_grouping$parameters$variance$sigmasq),
+              log = TRUE
+            )
+          ) - 2*log(length(Xtrain[, i]))
+          
         } else {
           try(oneBIC <- Mclust(
             as.matrix(S),
@@ -347,7 +421,7 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
           name <- if(ncol(S) > 2) emModels2 else emModels1
             out <- foreach(i = 1:ncol(S)) %DO%
             {
-              try(sBIC <- redda_varsel(
+              try(fit_no_grouping <- redda_varsel(
                 X_p = S[,i],
                 X_c = S[,-i, drop=FALSE],
                 cltrain = cltrain,
@@ -360,11 +434,23 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
               # cindepBIC is the BIC for the clustering model on the other
               # variables in S and the regression model of the proposed
               #  variable on the other variables in S
-              cindepBIC <- if(is.null(sBIC$bic)) NA else sBIC$bic
+              cindepBIC <- if (is.null(fit_no_grouping$bic)) {
+                NA
+              } else{
+                BIC_computation(X_p = S[,i],
+                                X_c = S[,-i, drop=FALSE],
+                                cltrain = cltrain, fitted_model = fit_no_grouping, model_type = "NG")
+              }
               # rdep is the the BIC for the clustering model on the other
               # variables in S (excluding the proposed variable)
-              rdep <- if(is.null(sBIC$bic_noreg)) NA else sBIC$bic_noreg
-              return(list(cindepBIC, rdep, sBIC$modelName, sBIC$G))
+              rdep <- if (is.null(fit_no_grouping$bic_noreg)) {
+                NA
+              } else{
+                BIC_computation(X_p = S[,i],
+                                X_c = S[,-i, drop=FALSE],
+                                cltrain = cltrain, fitted_model = fit_no_grouping, model_type = "only_mixture")
+              }
+              return(list(cindepBIC, rdep, fit_no_grouping$modelName, fit_no_grouping$G))
             }
             cindepBIC <- sapply(out, "[[", 1)
             rdep <- sapply(out, "[[", 2)
@@ -437,6 +523,6 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
               search = "greedy",
               direction = "forward")
 
-  class(out) <- "clustvarsel"
+  class(out) <- "robust_varsel"
   return(out)
 }
