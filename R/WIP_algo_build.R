@@ -244,7 +244,7 @@
 # #Try to see whether it works alpha_Xtrain=0.1
 # t_var_sel <- system.time(
 #   group_var_sel_trim <-
-#     redda_varsel_gr_fwd_TBIC_no_union(
+#     redda_varsel_gr_fwd(
 #       Xtrain = XX,
 #       cltrain = Class,
 #       alpha_Xtrain = 0.1,
