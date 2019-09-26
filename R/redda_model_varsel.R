@@ -34,7 +34,7 @@ redda_model_varsel <- function(X_p,
   if (alpha_Xtrain != 0) {
     Ntrain_trim <- Ntrain - ceiling(Ntrain * alpha_Xtrain)
     robust_result <-
-      patterned_MCD(nsamp = nsamp,
+      patterned_MCD_varsel(nsamp = nsamp,
                     # I perform the estimation starting from nsamp J_g subsets of sample size (d+1), inspired to what done in \cite{Hubert2018}
                     Xtrain,
                     X_p,

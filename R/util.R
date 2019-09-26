@@ -1,7 +1,7 @@
 # Function used in random initialization ---------------------------------
 
 
-patterned_MCD <-
+patterned_MCD_varsel <-
   # main function that will be repeated nsamp times, run only if alpha_Xtrain!=0
   function(nsamp,
            Xtrain,
@@ -11,7 +11,7 @@ patterned_MCD <-
            alpha_Xtrain,
            modelName, model) {
 
-    robust_start <-
+    robust_start_varsel <-
       function(Xtrain,
                X_p,
                cltrain,
@@ -47,7 +47,8 @@ patterned_MCD <-
           lm_fit <- fit_reg(x=Xtrain[J_ind,,drop=F], y=X_p[J_ind,,drop=F])
         }
         emptyz <- TRUE
-        iter <- 0
+        iter_max_patterned_MCD <- 50 # it would be nice to have this as an input option in the future, for the moment I keep it fixed. It is necessary since, for small number of variables, the while below might get stuck in an infinite loop, that is two obs keep being alternatively trimmed
+        iter_patterned_MCD <- 0
         pos_old <-
           1:ceiling(Ntrain * alpha_Xtrain)  # used in the while loop
         # initial random value just using the first ceiling(Ntrain * alpha_Xtrain) obs
@@ -55,7 +56,7 @@ patterned_MCD <-
         # the same obs are trimmed
         criterion <- TRUE
         while (criterion) {
-          iter <- iter + 1
+          iter_patterned_MCD <- iter_patterned_MCD + 1
           # in performing robust estimation I discard those obs with smallest value of
           # component density given their label
           fitetrain <-
@@ -115,7 +116,7 @@ patterned_MCD <-
               lm_fit <-
                 fit_reg(x = Xtrain_fit, y = X_p_fit)
             }
-            if (all(pos_old == pos_trimmed_train)) {
+            if (all(pos_old == pos_trimmed_train) | iter_patterned_MCD >= iter_max_patterned_MCD) {
               criterion <- FALSE
             } else {
               pos_old <- pos_trimmed_train
@@ -164,7 +165,7 @@ patterned_MCD <-
     n_init <-
       replicate(
         nsamp,
-        expr = robust_start(Xtrain,
+        expr = robust_start_varsel(Xtrain,
                             X_p,
                             cltrain,
                             ltrain,
