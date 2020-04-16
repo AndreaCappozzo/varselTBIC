@@ -19,7 +19,7 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
   Ntrain <- nrow(Xtrain) # number of rows = number of observations
   Ntrain_trim <- if(alpha_Xtrain!=0) {Ntrain - ceiling(Ntrain * alpha_Xtrain)} else {NULL}
   d <- ncol(Xtrain) # number of columns = number of variables
-  if(is.null(colnames(Xtrain))){
+  if(is.null(colnames(Xtrain))|any(duplicated(colnames(Xtrain)))){
     colnames(Xtrain) <- paste("X", 1:d, sep = "")
   }
   G <- length(unique(cltrain))
