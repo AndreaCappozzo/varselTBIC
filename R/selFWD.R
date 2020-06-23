@@ -228,16 +228,23 @@ redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
           }
       } else { # Addition Step in general (for all cases except when S is empty)
         if(ncol(NS) != 0 & !is.null(ncol(NS))) {
+          
+          if(ncol(S)==1) { 
+            modelNames_NG <- emModels1 # if S is one-dimensional, univariate models need to be fitted in the No-Grouping structure
+          } else{
+            modelNames_NG <- emModels2
+          }
             out <- foreach(i = 1:ncol(NS)) %DO%
             {
               # cindepBIC is the BIC for the grouping model on S and the
               # regression model of the new variable on S
+              cindepBIC <- NULL
               try(cindepBIC <- redda_varsel(
                 X_p = NS[,i],
                 X_c = S,
                 cltrain = cltrain,
                 alpha_Xtrain = alpha_Xtrain,
-                modelNames = emModels2,
+                modelNames = modelNames_NG,
                 nsamp = nsamp,
                 model = "NG"
               )$Best,
