@@ -237,14 +237,14 @@
 # 
 # #Try to see whether it works alpha_Xtrain=0
 # group_var_sel_no_trim <-
-#   redda_varsel_gr_fwd(Xtrain = XX,
+#   redda_varsel_gr_fwd_TBIC_no_union(Xtrain = XX,
 #                       cltrain = Class,
 #                       alpha_Xtrain = 0)
 # 
 # #Try to see whether it works alpha_Xtrain=0.1
 # t_var_sel <- system.time(
 #   group_var_sel_trim <-
-#     redda_varsel_gr_fwd(
+#     redda_varsel_gr_fwd_TBIC_no_union(
 #       Xtrain = XX,
 #       cltrain = Class,
 #       alpha_Xtrain = 0.1,
@@ -254,36 +254,36 @@
 # )[3]
 # 
 # 
-# group_var_sel_no_trim <-
-#   redda_varsel_gr_fwd_union_trimming(Xtrain = XX,
-#                       cltrain = Class,
-#                       alpha_Xtrain = 0)
-# 
-# #Try to see whether it works alpha_Xtrain=0.1
-# t_var_sel <- system.time(
-#   group_var_sel_trim <-
-#     redda_varsel_gr_fwd_union_trimming(
-#       Xtrain = XX,
-#       cltrain = Class,
-#       alpha_Xtrain = 0.05,
-#       emModels2 = NULL,
-#       nsamp = 2
-#     )
-# )[3]
-# 
-# 
-# #Try to see whether it works alpha_Xtrain=0.1 and trimming only for grouping model
-# 
-# t_var_sel <- system.time(
-#   group_var_sel_trim <-
-#     redda_varsel_gr_fwd_trimming_full_model(
-#       Xtrain = XX,
-#       cltrain = Class,
-#       alpha_Xtrain = 0.05,
-#       emModels2 = NULL,
-#       nsamp = 2
-#     )
-# )[3]
+# # group_var_sel_no_trim <-
+# #   redda_varsel_gr_fwd_union_trimming(Xtrain = XX,
+# #                       cltrain = Class,
+# #                       alpha_Xtrain = 0)
+# # 
+# # #Try to see whether it works alpha_Xtrain=0.1
+# # t_var_sel <- system.time(
+# #   group_var_sel_trim <-
+# #     redda_varsel_gr_fwd_union_trimming(
+# #       Xtrain = XX,
+# #       cltrain = Class,
+# #       alpha_Xtrain = 0.05,
+# #       emModels2 = NULL,
+# #       nsamp = 2
+# #     )
+# # )[3]
+# # 
+# # 
+# # #Try to see whether it works alpha_Xtrain=0.1 and trimming only for grouping model
+# # 
+# # t_var_sel <- system.time(
+# #   group_var_sel_trim <-
+# #     redda_varsel_gr_fwd_trimming_full_model(
+# #       Xtrain = XX,
+# #       cltrain = Class,
+# #       alpha_Xtrain = 0.05,
+# #       emModels2 = NULL,
+# #       nsamp = 2
+# #     )
+# # )[3]
 # 
 # #Function arguments
 # 
