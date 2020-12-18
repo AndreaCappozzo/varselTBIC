@@ -1,6 +1,7 @@
 # #############################################################################
-# ## Sequential & parallel robust forward greedy search REDDA
+# ## Sequential & parallel robust forward greedy search REDDA 
 # #############################################################################
+
 # # In this implementation models are robustly estimated but the comparison is made
 # # via BIC (aka non-robust information criterion) for the entire set of units
 # # it does not work: see Section 5 of \cite{Greco2019} 
