@@ -2,18 +2,17 @@
 ## Sequential & parallel robust forward greedy search REDDA
 #############################################################################
 
-redda_varsel_gr_fwd_TBIC_no_union <- function(Xtrain,
-                                cltrain,
-                          emModels1 = c("E","V"),
-                          emModels2 = mclust.options("emModelNames"),
-                          alpha_Xtrain,
-                          forcetwo = TRUE,
-                          BIC.diff = 0,
-                          itermax = 100,
-                          nsamp= 100,
-                          parallel = FALSE,
-                          fit= TRUE,
-                          verbose = interactive())
+redda_varsel_greedy_forward <- function(Xtrain,
+                                        cltrain,
+                                        emModels1 = c("E", "V"),
+                                        emModels2 = mclust.options("emModelNames"),
+                                        alpha_Xtrain,
+                                        forcetwo = TRUE,
+                                        BIC.diff = 0,
+                                        itermax = 100,
+                                        nsamp = 100,
+                                        parallel = FALSE,
+                                        verbose = interactive())
 {
   Xtrain <- data.matrix(Xtrain)
   Ntrain <- nrow(Xtrain) # number of rows = number of observations
