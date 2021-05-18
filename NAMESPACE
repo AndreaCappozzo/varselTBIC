@@ -3,6 +3,8 @@ exportPattern("^[^\\.]")
 
 import("mclust", "foreach", "iterators", "clustvarsel")
 
+S3method("print", "robvarsel")
+
 importFrom("BMA", bicreg)
 
 importFrom("stats", df.residual, lm.fit, residuals)

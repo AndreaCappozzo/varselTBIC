@@ -443,6 +443,6 @@ redda_varsel_greedy_forward <- function(Xtrain,
               search = "greedy",
               direction = "forward")
 
-  class(out) <- "clustvarsel"
+  class(out) <- "robvarsel"
   return(out)
 }
